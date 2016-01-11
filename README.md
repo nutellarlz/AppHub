@@ -1,6 +1,8 @@
 # AppHub
 The Future GitHub App Store for Android
 
+Apps in this market can be found in the [AppHub App Repo](https://github.com/JTechMe/AppHubAppRepo)
+
 * AppHub is a concept app market at the moment but is under active development.
 
 ````
