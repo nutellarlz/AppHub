@@ -1,5 +1,5 @@
 # AppHub
-The Future GitHub App Store for Android
+The Future Open Source App Store for Android
 
 * AppHub is to be based off of the F-Droid client app source found at https://gitlab.com/fdroid/fdroidclient
 * The AppHub client app is preset with the F-Droid repo until the AppHub server is up and running
