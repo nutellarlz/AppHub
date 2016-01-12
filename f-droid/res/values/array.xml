@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string-array name="updateIntervalNames">
+        <item>@string/interval_never</item>
+        <item>@string/interval_1h</item>
+        <item>@string/interval_4h</item>
+        <item>@string/interval_12h</item>
+        <item>@string/interval_1d</item>
+        <item>@string/interval_1w</item>
+        <item>@string/interval_2w</item>
+    </string-array>
+
+    <string-array name="themeNames">
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
+        <item>@string/theme_night</item>
+    </string-array>
+
+</resources>

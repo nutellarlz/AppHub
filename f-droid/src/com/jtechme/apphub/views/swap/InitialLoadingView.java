@@ -1,0 +1,63 @@
+package com.jtechme.apphub.views.swap;
+
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.os.Build;
+import android.support.annotation.ColorRes;
+import android.support.annotation.NonNull;
+import android.util.AttributeSet;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.widget.RelativeLayout;
+
+import com.jtechme.apphub.R;
+import com.jtechme.apphub.localrepo.SwapService;
+
+public class InitialLoadingView extends RelativeLayout implements SwapWorkflowActivity.InnerView {
+
+    public InitialLoadingView(Context context) {
+        super(context);
+    }
+
+    public InitialLoadingView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    public InitialLoadingView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public InitialLoadingView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+    }
+
+    private SwapWorkflowActivity getActivity() {
+        return (SwapWorkflowActivity) getContext();
+    }
+
+    @Override
+    public boolean buildMenu(Menu menu, @NonNull MenuInflater inflater) {
+        return true;
+    }
+
+    @Override
+    public int getStep() {
+        return SwapService.STEP_INITIAL_LOADING;
+    }
+
+    @Override
+    public int getPreviousStep() {
+        return SwapService.STEP_JOIN_WIFI;
+    }
+
+    @ColorRes
+    public int getToolbarColour() {
+        return R.color.swap_blue;
+    }
+
+    @Override
+    public String getToolbarTitle() {
+        return getResources().getString(R.string.swap);
+    }
+}

@@ -1,0 +1,230 @@
+/*
+ * Copyright (C) 2014 Dominik Schürmann <dominik@dominikschuermann.de>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
+
+package com.jtechme.apphub.installer;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.util.Log;
+
+import com.jtechme.apphub.Preferences;
+import com.jtechme.apphub.Utils;
+import com.jtechme.apphub.privileged.install.InstallExtensionDialogActivity;
+
+import java.io.File;
+import java.util.List;
+
+/**
+ * Abstract Installer class. Also provides static methods to automatically
+ * instantiate a working Installer based on F-Droids granted permissions.
+ */
+public abstract class Installer {
+    protected final Context mContext;
+    protected final PackageManager mPm;
+    protected final InstallerCallback mCallback;
+
+    private static final String TAG = "Installer";
+
+    /**
+     * This is thrown when an Installer is not compatible with the Android OS it
+     * is running on. This could be due to a broken superuser in case of
+     * RootInstaller or due to an incompatible Android version in case of
+     * SystemPermissionInstaller
+     */
+    public static class AndroidNotCompatibleException extends Exception {
+
+        private static final long serialVersionUID = -8343133906463328027L;
+
+        public AndroidNotCompatibleException() {
+        }
+
+        public AndroidNotCompatibleException(String message) {
+            super(message);
+        }
+
+        public AndroidNotCompatibleException(Throwable cause) {
+            super(cause);
+        }
+
+        public AndroidNotCompatibleException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    /**
+     * Callback from Installer. NOTE: This callback can be in a different thread
+     * than the UI thread
+     */
+    public interface InstallerCallback {
+
+        int OPERATION_INSTALL = 1;
+        int OPERATION_DELETE  = 2;
+
+        // Avoid using [-1,1] as they may conflict with Activity.RESULT_*
+        int ERROR_CODE_CANCELED     = 2;
+        int ERROR_CODE_OTHER        = 3;
+        int ERROR_CODE_CANNOT_PARSE = 4;
+
+        void onSuccess(int operation);
+
+        void onError(int operation, int errorCode);
+    }
+
+    public Installer(Context context, PackageManager pm, InstallerCallback callback)
+            throws AndroidNotCompatibleException {
+        this.mContext = context;
+        this.mPm = pm;
+        this.mCallback = callback;
+    }
+
+    public static Installer getActivityInstaller(Activity activity, InstallerCallback callback) {
+        return getActivityInstaller(activity, activity.getPackageManager(), callback);
+    }
+
+    /**
+     * Creates a new Installer for installing/deleting processes starting from
+     * an Activity
+     */
+    public static Installer getActivityInstaller(Activity activity, PackageManager pm,
+            InstallerCallback callback) {
+
+        // system permissions and pref enabled -> SystemInstaller
+        boolean isSystemInstallerEnabled = Preferences.get().isPrivilegedInstallerEnabled();
+        if (isSystemInstallerEnabled) {
+            if (PrivilegedInstaller.isExtensionInstalledCorrectly(activity)
+                    == PrivilegedInstaller.IS_EXTENSION_INSTALLED_YES) {
+                Utils.debugLog(TAG, "system permissions -> SystemInstaller");
+
+                try {
+                    return new PrivilegedInstaller(activity, pm, callback);
+                } catch (AndroidNotCompatibleException e) {
+                    Log.e(TAG, "Android not compatible with SystemInstaller!", e);
+                }
+            } else {
+                Log.e(TAG, "SystemInstaller is enabled in prefs, but system-perms are not granted!");
+            }
+        }
+
+        // else -> DefaultInstaller
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            // Default installer on Android >= 4.0
+            try {
+                Utils.debugLog(TAG, "try default installer for Android >= 4");
+
+                return new DefaultSdk14Installer(activity, pm, callback);
+            } catch (AndroidNotCompatibleException e) {
+                Log.e(TAG, "Android not compatible with DefaultInstallerSdk14!", e);
+            }
+        } else {
+            // Default installer on Android < 4.0
+            try {
+                Utils.debugLog(TAG, "try default installer for Android < 4");
+
+                return new DefaultInstaller(activity, pm, callback);
+            } catch (AndroidNotCompatibleException e) {
+                Log.e(TAG, "Android not compatible with DefaultInstaller!", e);
+            }
+        }
+
+        // this should not happen!
+        return null;
+    }
+
+    public void installPackage(File apkFile, String packageName) throws AndroidNotCompatibleException {
+        // check if file exists...
+        if (!apkFile.exists()) {
+            Log.e(TAG, "Couldn't find file " + apkFile + " to install.");
+            return;
+        }
+
+        // special case: F-Droid Privileged Extension
+        if (packageName != null && packageName.equals(PrivilegedInstaller.PRIVILEGED_EXTENSION_PACKAGE_NAME)) {
+            Activity activity;
+            try {
+                activity = (Activity) mContext;
+            } catch (ClassCastException e) {
+                Utils.debugLog(TAG, "F-Droid Privileged can only be updated using an activity!");
+                return;
+            }
+
+            Intent installIntent = new Intent(activity, InstallExtensionDialogActivity.class);
+            installIntent.setAction(InstallExtensionDialogActivity.ACTION_INSTALL);
+            installIntent.putExtra(InstallExtensionDialogActivity.EXTRA_INSTALL_APK, apkFile.getAbsolutePath());
+            activity.startActivity(installIntent);
+            return;
+        }
+
+        installPackageInternal(apkFile);
+    }
+
+    public void installPackage(List<File> apkFiles) throws AndroidNotCompatibleException {
+        // check if files exist...
+        for (File apkFile : apkFiles) {
+            if (!apkFile.exists()) {
+                Log.e(TAG, "Couldn't find file " + apkFile + " to install.");
+                return;
+            }
+        }
+
+        installPackageInternal(apkFiles);
+    }
+
+    public void deletePackage(String packageName) throws AndroidNotCompatibleException {
+        // check if package exists before proceeding...
+        try {
+            mPm.getPackageInfo(packageName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Couldn't find package " + packageName + " to delete.");
+            return;
+        }
+
+        // special case: F-Droid Privileged Extension
+        if (packageName != null && packageName.equals(PrivilegedInstaller.PRIVILEGED_EXTENSION_PACKAGE_NAME)) {
+            Activity activity;
+            try {
+                activity = (Activity) mContext;
+            } catch (ClassCastException e) {
+                Utils.debugLog(TAG, "F-Droid Privileged can only be uninstalled using an activity!");
+                return;
+            }
+
+            Intent uninstallIntent = new Intent(activity, InstallExtensionDialogActivity.class);
+            uninstallIntent.setAction(InstallExtensionDialogActivity.ACTION_UNINSTALL);
+            activity.startActivity(uninstallIntent);
+            return;
+        }
+
+        deletePackageInternal(packageName);
+    }
+
+    protected abstract void installPackageInternal(File apkFile)
+            throws AndroidNotCompatibleException;
+
+    protected abstract void installPackageInternal(List<File> apkFiles)
+            throws AndroidNotCompatibleException;
+
+    protected abstract void deletePackageInternal(String packageName)
+            throws AndroidNotCompatibleException;
+
+    public abstract boolean handleOnActivityResult(int requestCode, int resultCode, Intent data);
+
+    public abstract boolean supportsUnattendedOperations();
+}

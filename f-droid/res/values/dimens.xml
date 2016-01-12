@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="layout_horizontal_margin">16dp</dimen>
+    <dimen name="material_listitem_height">48dp</dimen>
+
+</resources>
