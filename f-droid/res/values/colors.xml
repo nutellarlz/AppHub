@@ -5,10 +5,10 @@
     <color name="unverified">#ff999999</color>
     <color name="red">#ffdd2c00</color>
 
-    <color name="fdroid_blue">#ff1976d2</color>
-    <color name="fdroid_blue_dark">#ff0d47a1</color>
-    <color name="fdroid_blue_darkest">#ff042570</color>
-    <color name="fdroid_green">#ff8ab000</color>
+    <color name="fdroid_blue">#4caf50</color>
+    <color name="fdroid_blue_dark">#388e3c</color>
+    <color name="fdroid_blue_darkest">#27632a</color>
+    <color name="fdroid_green">#00e676</color>
     <color name="fdroid_night">#ff222222</color>
     <color name="fdroid_night_dark">#ff111111</color>
 
@@ -24,5 +24,6 @@
     <color name="shadow">#cc222222</color>
 
     <color name="perms_costs_money">#fff4511e</color>
+    <color name="colorPrimaryDark">#388e3c</color>
 
 </resources>
