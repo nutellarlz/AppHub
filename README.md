@@ -1,11 +1,9 @@
 # AppHub
 The Future GitHub App Store for Android
 
-Apps in this market can be found in the [AppHub App Repo](https://github.com/JTechMe/AppHubAppRepo)
-
 * AppHub is to be based off of the F-Droid client app source found at https://gitlab.com/fdroid/fdroidclient
-* AppHub source will be available shortly
-* The AppHub client app will be preset with the F-Droid repo until the AppHub server is up and running
+* The AppHub client app is preset with the F-Droid repo until the AppHub server is up and running
+* Apps in this market will soon be located in the [AppHub App Repo](https://github.com/JTechMe/AppHubAppRepo) and mirrored to the future AppHub server
 
 ````
 Copyright 2015 Josiah Horton
