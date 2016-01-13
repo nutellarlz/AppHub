@@ -1,5 +1,5 @@
 language: android
-sudo: false
+sudo: true
 android:
   components:
     - build-tools-22.0.1
@@ -11,7 +11,7 @@ android:
   licenses:
     - 'android-sdk-license-.+'
     - '.*intel.+'
-    before_script:
+    before_install:
   - apt-get -q update -y
   - echo " == Installing packages required by this CI script"
   - apt-get -q install -y wget tar unzip
