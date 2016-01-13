@@ -1,4 +1,4 @@
-# AppHub
+# AppHub [![Build Status](https://travis-ci.org/JTechMe/AppHub.svg?branch=master)](https://travis-ci.org/JTechMe/AppHub)
 The Future Open Source App Store for Android
 
 * AppHub is to be based off of the F-Droid client app source found at https://gitlab.com/fdroid/fdroidclient
