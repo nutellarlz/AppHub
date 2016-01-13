@@ -11,8 +11,4 @@ android:
   licenses:
     - 'android-sdk-license-.+'
     - '.*intel.+'
-before_install:
-  - chmod +x gradlew
-install:
-  - ./gradlew
 script:
